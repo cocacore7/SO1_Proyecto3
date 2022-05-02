@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subscriber-deployment
+  namespace: squidgame
+  labels:
+    app: subscriber
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: subscriber
+  template:
+    metadata:
+      labels:
+        app: subscriber
+    spec:
+      hostname: grcp-host
+      containers:
+      - name: subscriber-cont
+        image: cocacore7/suscriber_go_rabbit_201908335
+        env:
+        - name: ADD_RABBIT
+          value: rabbitmq-0.rabbitmq.rabbits.svc.cluster.local:5672

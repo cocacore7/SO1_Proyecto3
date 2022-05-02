@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+option go_package = "github.com/cocacore7/grpc/proto";
+option java_multiple_files = true;
+option java_package = "io.grpc.protos.proto";
+option java_outer_classname = "proto";
+
+package proto;
+
+service Juego {
+  rpc Jugar (JuegoRequest) returns (JuegoReply) {}
+}
+
+message JuegoRequest {
+  int32 game = 1;
+  int32 players = 2;
+}
+
+message JuegoReply {
+  string resultado = 1;
+}

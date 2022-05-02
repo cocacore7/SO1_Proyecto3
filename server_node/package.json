@@ -1,0 +1,21 @@
+{
+  "name": "server_node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "grpc_srever.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@grpc/grpc-js": "^1.6.1",
+    "@grpc/proto-loader": "^0.6.9",
+    "amqplib": "^0.8.0",
+    "async": "^3.2.3",
+    "google-protobuf": "^3.20.0",
+    "lodash": "^4.17.21",
+    "minimist": "^1.2.6"
+  }
+}

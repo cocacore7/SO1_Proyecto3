@@ -1,0 +1,29 @@
+// GENERAL CLUSTER
+gcloud container clusters get-credentials proyecto3 --zone=us-central1-c
+kubectl create ns squidgame
+kubectl get nodes
+
+
+// RABBIT
+kubectl apply -n squidgame -f rabbit-rbac.yaml
+kubectl apply -n squidgame -f rabbit-secret.yaml
+kubectl apply -n squidgame -f rabbit-configmap.yaml
+kubectl apply -n squidgame -f rabbit-statefulset.yaml
+
+kubectl -n squidgame port-forward rabbitmq-0 8080:5672
+
+rabbitmqctl set_policy ha-fed \
+    ".*" '{"federation-upstream-set":"all", "ha-sync-mode":"automatic", "ha-mode":"nodes", "ha-params":["rabbit@rabbitmq-0.rabbitmq.rabbits.svc.cluster.local","rabbit@rabbitmq-1.rabbitmq.rabbits.svc.cluster.local","rabbit@rabbitmq-2.rabbitmq.rabbits.svc.cluster.local"]}' \
+    --priority 1 \
+    --apply-to queues
+
+
+
+// GRPC OSCAR
+kubectl apply -f client-server.ymlm
+kubectl apply -f subscriber.ymlm
+
+
+
+// RECURSOS
+https://docs.google.com/presentation/d/1ZBBPHlI3CBUaukW1nyIn_xiygyqavjgGytAR_daUmdk/edit#slide=id.g7882ba2fe1_0_114

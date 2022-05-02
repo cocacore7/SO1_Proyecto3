@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grcp-deploymentn
+  namespace: squidgame
+  labels:
+    app: grcpapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grcpapp
+  template:
+    metadata:
+      labels:
+        app: grcpapp
+    spec:
+      hostname: grcp-host
+      containers:
+      - name: client
+        image: cocacore7/client_go_201908335
+        ports:
+        - containerPort: 4000
+        env:
+        - name: GRCP_SERVER
+          value: "grcp-host:50051"
+      - name: server
+        image: cocacore7/server_node_201908335
+        ports:
+        - containerPort: 50051
+        env:
+        - name: RABBIT_HOST 
+          value: "rabbitmq-0.rabbitmq.rabbits.svc.cluster.local"
+        - name: RABBIT_PORT
+          value: "5672"
+        - name: RABBIT_USERNAME
+          value: "guest"
+        - name: RABBIT_PASSWORD
+          value: "guest"
