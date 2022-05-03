@@ -1,0 +1,207 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grcp-app-macario
+  namespace: squidgame
+  labels:
+    app: grcp-app-macario
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grcp-app-macario
+  template:
+    metadata:
+      annotations:
+        linkerd.io/inject: enabled
+      labels:
+        app: grcp-app-macario
+    spec:
+      hostname: grcp-host-macario
+      containers:
+      - name: client-node
+        image: amacario502/clientgrcp
+        ports:
+        - containerPort: 3000
+        env:
+        - name: GRCP_SERVER
+          value: "grcp-host-macario:50051"
+
+      - name: server-go
+        image: amacario502/servergrcp_201905837
+        ports:
+        - containerPort: 50051
+        env:
+        - name: ADD_KAFKA
+          value: my-cluster-kafka-bootstrap.squidgame:9092
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grcp-app-oscar
+  namespace: squidgame
+  labels:
+    app: grcp-app-oscar
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grcp-app-oscar
+  template:
+    metadata:
+      annotations:
+        linkerd.io/inject: enabled
+      labels:
+        app: grcp-app-oscar
+    spec:
+      hostname: grcp-host-oscar
+      containers:
+      - name: client-go
+        image: cocacore7/client_go_201908335
+        ports:
+        - containerPort: 3000
+        env:
+        - name: GRCP_SERVER
+          value: "grcp-host-oscar:50051"
+      - name: server-node
+        image: cocacore7/server_node_201908335
+        ports:
+        - containerPort: 50051
+        env:
+        - name: RABBIT_HOST 
+          value: "rabbitmq-0.rabbitmq.rabbits.svc.cluster.local"
+        - name: RABBIT_PORT
+          value: "5672"
+        - name: RABBIT_USERNAME
+          value: "guest"
+        - name: RABBIT_PASSWORD
+          value: "guest"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  name: service-macario
+  namespace: squidgame
+  labels:
+    app: grcp-app-macario
+spec:
+  ports:
+  - port: 3000
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: grcp-app-macario
+  type: ClusterIP
+status:
+  loadBalancer: {}
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  name: service-oscar
+  namespace: squidgame
+  labels:
+    app: grcp-app-oscar
+spec:
+  ports:
+  - port: 3000
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: grcp-app-oscar
+  type: ClusterIP
+status:
+  loadBalancer: {}
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: grcp-services-apps
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/service-upstream: "true"
+  namespace: squidgame
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: "104.197.37.174.nip.io"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: service-macario
+            port:
+              number: 3000
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: service-oscar
+            port:
+              number: 3000
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: faulty-traffic
+  namespace: squidgame
+data:
+ nginx.conf: |-
+    events {}
+    http {
+        server {
+          listen 3000;
+            location / {
+                return 500;
+            }
+        }
+    }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: faulty-traffic
+  namespace: squidgame
+  labels:
+    app: faulty-traffic
+spec:
+  selector:
+    matchLabels:
+      app: faulty-traffic
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        linkerd.io/inject: enabled
+      labels:
+        app: faulty-traffic
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: faulty-traffic
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: faulty-traffic
+  namespace: squidgame
+spec:
+  ports:
+  - name: service
+    port: 3000
+  selector:
+    app: faulty-traffic

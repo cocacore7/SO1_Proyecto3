@@ -1,0 +1,14 @@
+apiVersion: split.smi-spec.io/v1alpha1
+kind: TrafficSplit
+metadata:
+  name: faulty-split
+  namespace: squidgame
+spec:
+  service: conf-faulty-split
+  backends:
+  - service: grcp-app-macario
+    weight: 500m
+  - service: grcp-app-oscar
+    weight: 0m
+  - service: faulty-traffic
+    weight: 500m

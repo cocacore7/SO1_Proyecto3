@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subscriber-deployment-rabbit
+  namespace: squidgame
+  labels:
+    app: subscriber-rabbit
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: subscriber-rabbit
+  template:
+    metadata:
+      labels:
+        app: subscriber-rabbit
+    spec:
+      hostname: grcp-host-rabbit
+      containers:
+      - name: subscriber-rabbit-cont
+        image: cocacore7/suscriber_go_rabbit_201908335
+        env:
+        - name: ADD_RABBIT
+          value: rabbitmq-0.rabbitmq.squidgame.svc.cluster.local:5672
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: subscriber-deployment-kafka
+  namespace: squidgame
+  labels:
+    app: subscriber-kafka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: subscriber-kafka
+  template:
+    metadata:
+      labels:
+        app: subscriber-kafka
+    spec:
+      hostname: grcp-host
+      containers:
+      - name: subscriber-kafka-cont
+        image: amacario502/subscriber
+        env:
+        - name: ADD_KAFKA
+          value: my-cluster-kafka-bootstrap.squidgame:9092

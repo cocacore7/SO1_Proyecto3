@@ -30,7 +30,7 @@ func main() {
 	router.HandleFunc("/", Test).Methods("GET")
 
 	handler := cors.Default().Handler(router)
-	log.Fatal(http.ListenAndServe(":4000", handler))
+	log.Fatal(http.ListenAndServe(":3000", handler))
 }
 
 func Juego(w http.ResponseWriter, resp *http.Request) {

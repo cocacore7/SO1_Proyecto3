@@ -1,29 +1,65 @@
+-------------------------------------------------------------------------------------------------------
 // GENERAL CLUSTER
 gcloud container clusters get-credentials proyecto3 --zone=us-central1-c
 kubectl create ns squidgame
 kubectl get nodes
+-------------------------------------------------------------------------------------------------------
 
-
+-------------------------------------------------------------------------------------------------------
 // RABBIT
-kubectl apply -n squidgame -f rabbit-rbac.yaml
-kubectl apply -n squidgame -f rabbit-secret.yaml
-kubectl apply -n squidgame -f rabbit-configmap.yaml
-kubectl apply -n squidgame -f rabbit-statefulset.yaml
+kubectl apply -n squidgame -f rabbit-conf.yaml
+kubectl get pods -n squidgame
 
 kubectl -n squidgame port-forward rabbitmq-0 8080:5672
 
 rabbitmqctl set_policy ha-fed \
-    ".*" '{"federation-upstream-set":"all", "ha-sync-mode":"automatic", "ha-mode":"nodes", "ha-params":["rabbit@rabbitmq-0.rabbitmq.rabbits.svc.cluster.local","rabbit@rabbitmq-1.rabbitmq.rabbits.svc.cluster.local","rabbit@rabbitmq-2.rabbitmq.rabbits.svc.cluster.local"]}' \
+    ".*" '{"federation-upstream-set":"all", "ha-sync-mode":"automatic", "ha-mode":"nodes", "ha-params":["rabbit@rabbitmq-0.rabbitmq.squidgame.svc.cluster.local","rabbit@rabbitmq-1.rabbitmq.squidgame.svc.cluster.local","rabbit@rabbitmq-2.rabbitmq.squidgame.svc.cluster.local"]}' \
     --priority 1 \
     --apply-to queues
+-------------------------------------------------------------------------------------------------------
 
+-------------------------------------------------------------------------------------------------------
+// KAFKA
+kubectl create -f 'https://strimzi.io/install/latest?namespace=squidgame' -n squidgame
+kubectl apply -f https://strimzi.io/examples/latest/kafka/kafka-persistent-single.yaml -n squidgame 
+kubectl wait kafka/my-cluster --for=condition=Ready --timeout=300s -n squidgame
+-------------------------------------------------------------------------------------------------------
 
+-------------------------------------------------------------------------------------------------------
+// SUBSCRIBERS
+kubectl apply -n squidgame -f subscribers.yaml
+kubectl get pods -n squidgame
+-------------------------------------------------------------------------------------------------------
 
-// GRPC OSCAR
-kubectl apply -f client-server.ymlm
-kubectl apply -f subscriber.ymlm
+-------------------------------------------------------------------------------------------------------
+// LINKERD
+curl --proto '=https' --tlsv1.2 -sSfL https://run.linkerd.io/install | sh
+export PATH=$PATH:/home/cocacore7/.linkerd2/bin
+linkerd version
+linkerd install | kubectl apply -f -
+linkerd check
+linkerd viz install | kubectl apply -f -
+linkerd check
 
+export PATH=$PATH:/home/cocacore7/.linkerd2/bin
+linkerd viz dashboard
+-------------------------------------------------------------------------------------------------------
 
+-------------------------------------------------------------------------------------------------------
+// INGRESS CONTROLER, INGRESS, SERVICES Y GRPC-APPS
+kubectl get services -n nginx-ingress
+kubectl get pods -n nginx-ingress
+kubectl get -n nginx-ingress deploy nginx-ingress-ingress-nginx-controller -o yaml \
+| linkerd inject - \
+| kubectl apply -f -
 
+kubectl apply -n squidgame -f clients-servers.yaml
+-------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------
 // RECURSOS
 https://docs.google.com/presentation/d/1ZBBPHlI3CBUaukW1nyIn_xiygyqavjgGytAR_daUmdk/edit#slide=id.g7882ba2fe1_0_114
+https://drive.google.com/file/d/138hY2HXRMtoiLE5svKWPnngfUmnarOFr/view
+https://docs.google.com/document/d/1Ob7XPfItdUatF9V6RbiLcgiE4o___COec3gdEMHLM24/edit
+
+-------------------------------------------------------------------------------------------------------
