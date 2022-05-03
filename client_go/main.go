@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -26,11 +25,11 @@ type Datos struct {
 func main() {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/Games", Juego).Methods("POST")
+	router.HandleFunc("/Games/game/{game}/gamename/{gamename}/players/{players}", Juego).Methods("POST")
 	router.HandleFunc("/", Test).Methods("GET")
 
 	handler := cors.Default().Handler(router)
-	log.Fatal(http.ListenAndServe(":3000", handler))
+	log.Fatal(http.ListenAndServe(":4000", handler))
 }
 
 func Juego(w http.ResponseWriter, resp *http.Request) {
@@ -51,8 +50,14 @@ func Juego(w http.ResponseWriter, resp *http.Request) {
 	defer cancel()
 
 	var Datos Datos
-	body, err := ioutil.ReadAll(resp.Body)
-	err = json.Unmarshal(body, &Datos)
+	parametros := mux.Vars(resp)
+	id_game := parametros["game"]
+	err = json.Unmarshal([]byte(id_game), &Datos.Game)
+	if err != nil {
+		return
+	}
+	players_game := parametros["players"]
+	err = json.Unmarshal([]byte(players_game), &Datos.Players)
 	if err != nil {
 		return
 	}
