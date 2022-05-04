@@ -4,11 +4,11 @@ metadata:
   name: faulty-split
   namespace: squidgame
 spec:
-  service: conf-faulty-split
+  service: grcp-app-macario
   backends:
   - service: grcp-app-macario
-    weight: 1000m
+    weight: 400m
   - service: grcp-app-oscar
-    weight: 0m
+    weight: 400m
   - service: faulty-traffic
-    weight: 0m
+    weight: 200m

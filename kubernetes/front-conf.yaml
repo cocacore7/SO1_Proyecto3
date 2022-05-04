@@ -1,0 +1,162 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: squidgame
+  name: rust-gerson
+  labels:
+    deployment: rust-gerson
+spec:
+  selector:
+    matchLabels:
+      pod: rust-gerson-pod
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        pod: rust-gerson-pod
+    spec:
+      containers:
+        - name: rust-gerson
+          image: william580/reportes_rust
+          ports:
+            - containerPort: 5000
+          env:
+            - name: MONGO_HOST
+              value: '34.125.22.148'
+          resources:
+            # Sin limites de recursos
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: squidgame
+  name: svc-rust-gerson
+  labels:
+    service: svc-rust-gerson
+spec:
+  type: LoadBalancer
+  selector:
+    pod: rust-gerson-pod
+  ports:
+    - port: 5000
+      targetPort: 5000
+      name: http
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: squidgame
+  name: node-gerson
+  labels:
+    deployment: node-gerson
+spec:
+  selector:
+    matchLabels:
+      pod: node-pod-gerson
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        pod: node-pod-gerson
+    spec:
+      containers:
+        - name: node-gerson
+          image: william580/reportes_node
+          ports:
+            - containerPort: 8080
+          env:
+            - name: REDIS_HOST
+              value: '34.125.222.222'
+            - name: TIDB_HOST
+              value: '34.125.71.162'
+          resources:
+            # Sin limites de recursos
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: squidgame
+  name: svc-node-gerson
+  labels:
+    service: svc-node-gerson
+spec:
+  type: LoadBalancer
+  selector:
+    pod: node-pod-gerson
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: squidgame
+  name: frontend-gerson
+  labels:
+    deployment: frontend-gerson
+spec:
+  selector:
+    matchLabels:
+      pod: frontend-pod-gerson
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        pod: frontend-pod-gerson
+    spec:
+      containers:
+        - name: frontend-gerson
+          image: william580/frontend_react
+          ports:
+            - containerPort: 3000
+          env:
+          - name: API_URL
+            value: http://my-awesom
+          - name: NODE_ENV
+            value: production
+          - name: REACT_APP_RUST_HOST
+            value: '34.122.179.86'
+          - name: REACT_APP_NODEJS_HOST
+            value: '34.72.109.37'
+          resources:
+            # Sin limites de recursos
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: squidgame
+  name: svc-frontend-gerson
+  labels:
+    service: svc-frontend-gerson
+spec:
+  type: ClusterIP
+  selector:
+    pod: frontend-pod-gerson
+  ports:
+    - port: 3000
+      targetPort: 3000
+      protocol: TCP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: squidgame
+  name: ingress-frontend-gerson
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/service-upstream: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: "104.197.37.174.nip.io"
+      http:
+        paths:
+          - pathType: Prefix
+            path: /
+            backend:
+              service:
+                name: svc-frontend-gerson
+                port:
+                  number: 3000

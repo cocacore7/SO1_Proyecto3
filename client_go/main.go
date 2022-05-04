@@ -25,11 +25,11 @@ type Datos struct {
 func main() {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/Games/game/{game}/gamename/{gamename}/players/{players}", Juego).Methods("POST")
+	router.HandleFunc("/Games/game/{game}/gamename/{gamename}/players/{players}", Juego).Methods("GET")
 	router.HandleFunc("/", Test).Methods("GET")
 
 	handler := cors.Default().Handler(router)
-	log.Fatal(http.ListenAndServe(":4000", handler))
+	log.Fatal(http.ListenAndServe(":3000", handler))
 }
 
 func Juego(w http.ResponseWriter, resp *http.Request) {
@@ -49,22 +49,22 @@ func Juego(w http.ResponseWriter, resp *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	var Datos Datos
+	var DatosSend Datos
 	parametros := mux.Vars(resp)
-	id_game := parametros["game"]
-	err = json.Unmarshal([]byte(id_game), &Datos.Game)
+	idGame := parametros["game"]
+	err = json.Unmarshal([]byte(idGame), &DatosSend.Game)
 	if err != nil {
 		return
 	}
-	players_game := parametros["players"]
-	err = json.Unmarshal([]byte(players_game), &Datos.Players)
+	playersGame := parametros["players"]
+	err = json.Unmarshal([]byte(playersGame), &DatosSend.Players)
 	if err != nil {
 		return
 	}
 
 	r, err := c.Jugar(ctx, &pb.JuegoRequest{
-		Game:    Datos.Game,
-		Players: Datos.Players,
+		Game:    DatosSend.Game,
+		Players: DatosSend.Players,
 	})
 	if err != nil {
 		log.Fatalf("Error al jugar: %v", err)
@@ -73,6 +73,6 @@ func Juego(w http.ResponseWriter, resp *http.Request) {
 	_ = json.NewEncoder(w).Encode(r.GetResultado())
 }
 
-func Test(w http.ResponseWriter, resp *http.Request) {
+func Test(w http.ResponseWriter, _ *http.Request) {
 	_ = json.NewEncoder(w).Encode("Cliente Go Funciona")
 }
