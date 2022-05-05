@@ -17,12 +17,9 @@ spec:
     spec:
       containers:
         - name: rust-gerson
-          image: william580/reportes_rust
+          image: gersonquinia/rust_image
           ports:
-            - containerPort: 5000
-          env:
-            - name: MONGO_HOST
-              value: '34.125.22.148'
+            - containerPort: 8000
           resources:
             # Sin limites de recursos
 ---
@@ -38,8 +35,8 @@ spec:
   selector:
     pod: rust-gerson-pod
   ports:
-    - port: 5000
-      targetPort: 5000
+    - port: 8000
+      targetPort: 8000
       name: http
       protocol: TCP
 ---
@@ -62,14 +59,9 @@ spec:
     spec:
       containers:
         - name: node-gerson
-          image: william580/reportes_node
+          image: gersonquinia/backend_node
           ports:
             - containerPort: 8080
-          env:
-            - name: REDIS_HOST
-              value: '34.125.222.222'
-            - name: TIDB_HOST
-              value: '34.125.71.162'
           resources:
             # Sin limites de recursos
 ---
@@ -108,18 +100,14 @@ spec:
     spec:
       containers:
         - name: frontend-gerson
-          image: william580/frontend_react
+          image: gersonquinia/run_front
           ports:
-            - containerPort: 3000
+            - containerPort: 4000
           env:
-          - name: API_URL
-            value: http://my-awesom
-          - name: NODE_ENV
-            value: production
           - name: REACT_APP_RUST_HOST
-            value: '34.122.179.86'
+            value: '34.123.117.181'
           - name: REACT_APP_NODEJS_HOST
-            value: '34.72.109.37'
+            value: '34.136.221.182'
           resources:
             # Sin limites de recursos
 ---
@@ -135,8 +123,8 @@ spec:
   selector:
     pod: frontend-pod-gerson
   ports:
-    - port: 3000
-      targetPort: 3000
+    - port: 4000
+      targetPort: 4000
       protocol: TCP
 ---
 apiVersion: networking.k8s.io/v1
@@ -150,7 +138,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - host: "104.197.37.174.nip.io"
+    - host: "front.104.197.37.174.nip.io"
       http:
         paths:
           - pathType: Prefix
@@ -159,4 +147,4 @@ spec:
               service:
                 name: svc-frontend-gerson
                 port:
-                  number: 3000
+                  number: 4000

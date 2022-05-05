@@ -95,7 +95,7 @@ func main() {
 			Log.Fecha = t.Format("2006-01-02 15:04:05")
 
 			//Almacenar Mongo//Conectar con mongodb
-			clientOptions := options.Client().ApplyURI("mongodb://admin:pass123@34.125.197.46:27017")
+			clientOptions := options.Client().ApplyURI("mongodb://admin:pass123@" + os.Getenv("ADD_MONGO") + ":27017")
 			client, err := mongo.Connect(ctx, clientOptions)
 			if err != nil {
 				log.Fatal(err)
@@ -118,13 +118,13 @@ func main() {
 
 			//Conectar con clientes
 			clientredis := redis.NewClient(&redis.Options{
-				Addr:     "34.125.235.244:6379",
+				Addr:     os.Getenv("ADD_REDIS"),
 				Password: "",
 				DB:       0,
 			})
 
 			clienttidis := redis.NewClient(&redis.Options{
-				Addr:     "34.125.12.54:5379",
+				Addr:     os.Getenv("ADD_TIDIS"),
 				Password: "",
 				DB:       0,
 			})

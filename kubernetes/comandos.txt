@@ -55,10 +55,11 @@ kubectl get -n nginx-ingress deploy nginx-ingress-ingress-nginx-controller -o ya
 
 kubectl apply -n squidgame -f clients-servers.yaml
 kubectl apply -n squidgame -f traffic-split-conf1.yaml
-kubectl apply -n squidgame -f traffic-split-conf2.yaml
-kubectl apply -n squidgame -f traffic-split-conf3.yaml
-kubectl apply -n squidgame -f traffic-split-conf4.yaml
-kubectl apply -n squidgame -f traffic-split-conf5.yaml
+-------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------
+// FRONT, RUST Y NODE
+kubectl apply -n squidgame -f front-conf.yaml
 -------------------------------------------------------------------------------------------------------
 
 -------------------------------------------------------------------------------------------------------

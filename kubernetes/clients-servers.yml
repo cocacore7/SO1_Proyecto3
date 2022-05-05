@@ -122,13 +122,12 @@ kind: Ingress
 metadata:
   name: grcp-services-apps
   annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
     nginx.ingress.kubernetes.io/service-upstream: "true"
   namespace: squidgame
 spec:
   ingressClassName: nginx
   rules:
-  - host: "104.197.37.174.nip.io"
+  - host: "backend.104.197.37.174.nip.io"
     http:
       paths:
         - path: /

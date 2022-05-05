@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -33,6 +34,11 @@ func main() {
 }
 
 func Juego(w http.ResponseWriter, resp *http.Request) {
+	idGame := mux.Vars(resp)["game"]
+	players := mux.Vars(resp)["players"]
+	gamename := mux.Vars(resp)["gamename"]
+	fmt.Print(idGame + players + gamename)
+
 	flag.Parse()
 	conn, err := grpc.Dial(os.Getenv("GRCP_SERVER"), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -49,22 +55,20 @@ func Juego(w http.ResponseWriter, resp *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	var DatosSend Datos
-	parametros := mux.Vars(resp)
-	idGame := parametros["game"]
-	err = json.Unmarshal([]byte(idGame), &DatosSend.Game)
+	var DatosGame Datos
+
+	err = json.Unmarshal([]byte(idGame), &DatosGame.Game)
 	if err != nil {
 		return
 	}
-	playersGame := parametros["players"]
-	err = json.Unmarshal([]byte(playersGame), &DatosSend.Players)
+	err = json.Unmarshal([]byte(players), &DatosGame.Players)
 	if err != nil {
 		return
 	}
 
 	r, err := c.Jugar(ctx, &pb.JuegoRequest{
-		Game:    DatosSend.Game,
-		Players: DatosSend.Players,
+		Game:    DatosGame.Game,
+		Players: DatosGame.Players,
 	})
 	if err != nil {
 		log.Fatalf("Error al jugar: %v", err)
