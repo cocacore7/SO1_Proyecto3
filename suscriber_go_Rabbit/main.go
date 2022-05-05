@@ -131,14 +131,23 @@ func main() {
 
 			//Almacenar registros redis y tidis
 
-			errorReids := clientredis.Set("tiempoReal", tiempoReal, 0).Err()
+			errorRedis := clientredis.Set("tiempoReal", tiempoReal, 0).Err()
 			if err != nil {
-				panic(errorReids)
+				panic(errorRedis)
+			}
+			errorListaRedis := clientredis.LPush("listaJugadores", tiempoReal).Err()
+			if errorListaRedis != nil {
+				panic(errorListaRedis)
 			}
 
 			errorTidis := clienttidis.Set("tiempoReal", tiempoReal, 0).Err()
-			if err != nil {
+			if errorTidis != nil {
 				panic(errorTidis)
+			}
+
+			errorListaTidis := clienttidis.LPush("listaJugadores", tiempoReal).Err()
+			if errorListaTidis != nil {
+				panic(errorListaTidis)
 			}
 		}
 	}()

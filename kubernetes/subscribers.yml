@@ -24,10 +24,6 @@ spec:
           value: rabbitmq-0.rabbitmq.squidgame.svc.cluster.local:5672
         - name: ADD_MONGO
           value: "34.125.105.99"
-        - name: ADD_REDIS
-          value: "34.125.169.158"
-        - name: ADD_TIDIS
-          value: "34.125.187.155"
 ---
 apiVersion: apps/v1
 kind: Deployment
